@@ -2,18 +2,33 @@ const fs = require('fs');
 const path = require('path');
 
 const EVENTS_FILE = path.join(__dirname, '../data/events.json');
+let persistenceEnabled = true;
 
 // Créer le dossier data s'il n'existe pas
 const ensureDataDir = () => {
     const dataDir = path.join(__dirname, '../data');
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
+    try {
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true, mode: 0o755 });
+        }
+        // Tester les permissions d'écriture
+        const testFile = path.join(dataDir, '.write-test');
+        fs.writeFileSync(testFile, 'test');
+        fs.unlinkSync(testFile);
+        return true;
+    } catch (error) {
+        console.error('⚠️ Impossible de créer/écrire dans le dossier data:', error.message);
+        console.error('⚠️ Persistance désactivée - les événements seront perdus au redémarrage!');
+        persistenceEnabled = false;
+        return false;
     }
 };
 
 // Charger les événements depuis le fichier
 const loadEvents = () => {
-    ensureDataDir();
+    if (!persistenceEnabled || !ensureDataDir()) {
+        return {};
+    }
     
     try {
         if (fs.existsSync(EVENTS_FILE)) {
@@ -21,7 +36,7 @@ const loadEvents = () => {
             return JSON.parse(data);
         }
     } catch (error) {
-        console.error('❌ Erreur lors du chargement des événements:', error);
+        console.error('❌ Erreur lors du chargement des événements:', error.message);
     }
     
     // Structure: { guildId: { eventId, canBuzz, currentSpeaker, ... } }
@@ -30,13 +45,16 @@ const loadEvents = () => {
 
 // Sauvegarder les événements dans le fichier
 const saveEvents = (events) => {
-    ensureDataDir();
+    if (!persistenceEnabled || !ensureDataDir()) {
+        return false;
+    }
     
     try {
         fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2), 'utf8');
         return true;
     } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde des événements:', error);
+        console.error('❌ Erreur lors de la sauvegarde des événements:', error.message);
+        console.error('⚠️ Vérifiez les permissions du dossier data/');
         return false;
     }
 };

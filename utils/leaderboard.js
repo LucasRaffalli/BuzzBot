@@ -2,18 +2,33 @@ const fs = require('fs');
 const path = require('path');
 
 const LEADERBOARD_FILE = path.join(__dirname, '../data/leaderboard.json');
+let persistenceEnabled = true;
 
 // Créer le dossier data s'il n'existe pas
 const ensureDataDir = () => {
     const dataDir = path.join(__dirname, '../data');
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
+    try {
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true, mode: 0o755 });
+        }
+        // Tester les permissions d'écriture
+        const testFile = path.join(dataDir, '.write-test');
+        fs.writeFileSync(testFile, 'test');
+        fs.unlinkSync(testFile);
+        return true;
+    } catch (error) {
+        console.error('⚠️ Impossible de créer/écrire dans le dossier data:', error.message);
+        console.error('⚠️ Persistance du leaderboard désactivée!');
+        persistenceEnabled = false;
+        return false;
     }
 };
 
 // Charger le leaderboard depuis le fichier
 const loadLeaderboard = () => {
-    ensureDataDir();
+    if (!persistenceEnabled || !ensureDataDir()) {
+        return {};
+    }
     
     try {
         if (fs.existsSync(LEADERBOARD_FILE)) {
@@ -21,7 +36,7 @@ const loadLeaderboard = () => {
             return JSON.parse(data);
         }
     } catch (error) {
-        console.error('❌ Erreur lors du chargement du leaderboard:', error);
+        console.error('❌ Erreur lors du chargement du leaderboard:', error.message);
     }
     
     // Structure par défaut: { guildId: { userId: { username, wins, lastWin } } }
@@ -30,13 +45,16 @@ const loadLeaderboard = () => {
 
 // Sauvegarder le leaderboard dans le fichier
 const saveLeaderboard = (leaderboard) => {
-    ensureDataDir();
+    if (!persistenceEnabled || !ensureDataDir()) {
+        return false;
+    }
     
     try {
         fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2), 'utf8');
         return true;
     } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde du leaderboard:', error);
+        console.error('❌ Erreur lors de la sauvegarde du leaderboard:', error.message);
+        console.error('⚠️ Vérifiez les permissions du dossier data/');
         return false;
     }
 };

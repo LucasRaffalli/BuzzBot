@@ -65,6 +65,23 @@ node deploy-commands.js
 node index.js
 ```
 
+## Déploiement sur serveur Linux
+
+Si vous déployez sur un serveur et rencontrez des erreurs de permissions (EACCES), exécutez:
+
+```bash
+# Donner les bonnes permissions au dossier data
+chmod +x fix-permissions.sh
+./fix-permissions.sh
+
+# Ou manuellement:
+mkdir -p data
+chmod 755 data
+chmod 644 data/*.json
+```
+
+Si la persistance échoue, le bot continuera de fonctionner mais les données seront perdues au redémarrage.
+
 ## Commandes
 
 ### Gestion d'événements
