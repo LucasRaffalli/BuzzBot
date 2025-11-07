@@ -57,11 +57,17 @@ module.exports = {
         }
 
         try {
-            // Muter tous les membres (sauf les bots)
+            // Muter tous les membres (sauf les bots et le créateur)
             const members = voiceChannel.members.filter(member => !member.user.bot);
             let mutedCount = 0;
 
             for (const [, member] of members) {
+                // Ne pas muter le créateur de l'événement
+                if (member.id === buzzState.createdBy) {
+                    console.log(`⏭️ Créateur ${member.user.tag} non muté`);
+                    continue;
+                }
+                
                 try {
                     if (!member.voice.serverMute) {
                         await member.voice.setMute(true, `REBUZZ par ${interaction.user.tag}`);

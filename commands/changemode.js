@@ -62,6 +62,12 @@ module.exports = {
                 let mutedCount = 0;
                 
                 for (const [, member] of members) {
+                    // Ne pas muter le créateur
+                    if (member.id === buzzState.createdBy) {
+                        console.log(`⏭️ Créateur ${member.user.tag} non muté`);
+                        continue;
+                    }
+                    
                     try {
                         if (!member.voice.mute) {
                             await member.voice.setMute(true, 'Changement de mode');

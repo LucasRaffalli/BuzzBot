@@ -72,8 +72,12 @@ module.exports = {
 
             await interaction.reply({ embeds: [embed] });
 
-            // Remuter l'attaquant (s'assurer qu'il est bien muté)
-            await attackerMember.voice.setMute(true, 'Attaque échouée');
+            // Remuter l'attaquant (sauf si c'est le créateur)
+            if (attackerMember.id !== buzzState.createdBy) {
+                await attackerMember.voice.setMute(true, 'Attaque échouée');
+            } else {
+                console.log(`⏭️ Créateur ${attackerMember.user.tag} non muté`);
+            }
 
             // Réinitialiser l'état d'attaque (VERROUILLÉ - en attente de /unlockbuzz)
             buzzState.attackData = null;

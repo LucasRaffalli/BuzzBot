@@ -32,8 +32,14 @@ module.exports = {
         // MODE MULTI BUZZ
         if (buzzState.mode === 'multi' && buzzState.multiBuzzers && buzzState.multiBuzzers.length > 0) {
             try {
-                // Remute tous les participants du MultiBuzz
+                // Remute tous les participants du MultiBuzz (sauf le créateur)
                 for (const buzzer of buzzState.multiBuzzers) {
+                    // Ne pas muter le créateur
+                    if (buzzer.userId === buzzState.createdBy) {
+                        console.log(`⏭️ Créateur ${buzzer.username} non muté`);
+                        continue;
+                    }
+                    
                     const member = await interaction.guild.members.fetch(buzzer.userId);
                     await member.voice.setMute(true, 'Mauvaise réponse MultiBuzz');
                 }
@@ -86,9 +92,11 @@ module.exports = {
             // Récupérer le membre qui a buzzé
             const member = await interaction.guild.members.fetch(buzzState.currentSpeaker);
             
-            // Remuter le joueur qui a donné la mauvaise réponse
-            if (member.voice.channel) {
+            // Remuter le joueur qui a donné la mauvaise réponse (sauf si c'est le créateur)
+            if (member.voice.channel && member.id !== buzzState.createdBy) {
                 await member.voice.setMute(true, 'Mauvaise réponse - BADBUZZ');
+            } else if (member.id === buzzState.createdBy) {
+                console.log(`⏭️ Créateur ${member.user.tag} non muté`);
             }
             
             // Réinitialiser le BUZZ (VERROUILLÉ par défaut)

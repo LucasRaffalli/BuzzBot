@@ -136,7 +136,15 @@ module.exports = {
                             });
                         }
                     } else {
-                        // MODE MULTI BUZZ - Vérifier si on a déjà 3 buzzers
+                        // MODE MULTI BUZZ - Vérifier le lock d'abord
+                        if (!buzzState.canBuzz) {
+                            return interaction.reply({
+                                content: `🔒 Le BUZZ est verrouillé! Attendez que l'admin le déverrouille avec \`/unlockbuzz\`.`,
+                                ephemeral: true
+                            });
+                        }
+                        
+                        // Vérifier si on a déjà 3 buzzers
                         if (buzzState.multiBuzzers.length >= 3) {
                             return interaction.reply({
                                 content: `⏱️ Trop lent! Les 3 places sont déjà prises!`,
