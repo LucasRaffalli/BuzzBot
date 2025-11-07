@@ -121,6 +121,14 @@ module.exports = {
                     if (buzzState.mode === 'simple') {
                         // Vérifier si quelqu'un peut encore buzzer
                         if (!buzzState.canBuzz) {
+                            // Si verrouillé (pas de currentSpeaker)
+                            if (!buzzState.currentSpeaker) {
+                                return interaction.reply({
+                                    content: `🔒 Le BUZZ est verrouillé! Attendez que l'admin le déverrouille avec \`/unlockbuzz\`.`,
+                                    ephemeral: true
+                                });
+                            }
+                            // Si quelqu'un a déjà buzzé
                             const currentSpeaker = await interaction.guild.members.fetch(buzzState.currentSpeaker);
                             return interaction.reply({
                                 content: `⏱️ Trop lent! ${currentSpeaker.user} a été plus rapide!`,

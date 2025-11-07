@@ -66,18 +66,34 @@ module.exports = {
             
             await interaction.reply({ embeds: [embed] });
             
-            // Réinitialiser le MultiBuzz
+            // Démuter les 3 joueurs pour discuter
+            const voiceChannel = interaction.guild.channels.cache.get(buzzState.voiceChannelId);
+            if (voiceChannel) {
+                const members = voiceChannel.members.filter(m => !m.user.bot);
+                let unmutedCount = 0;
+                for (const [, m] of members) {
+                    try {
+                        if (m.voice.serverMute) {
+                            await m.voice.setMute(false, 'MultiBuzz validé - discussion libre');
+                            unmutedCount++;
+                        }
+                    } catch (err) {
+                        console.error(`Erreur lors du démute de ${m.user.tag}:`, err.message);
+                    }
+                }
+                console.log(`🔓 ${unmutedCount} personne(s) démutée(s) pour discussion`);
+            }
+            
+            // Réinitialiser le MultiBuzz (VERROUILLÉ - en attente de /rebuzz)
             buzzState.multiBuzzers = [];
             buzzState.voteData = null;
+            buzzState.canBuzz = false; // VERROUILLÉ
             
             // Sauvegarder les modifications
             interaction.client.buzzState.set(interaction.guildId, buzzState);
             syncBuzzState(interaction.client, interaction.guildId);
             
-            // Renvoyer le bouton BUZZ
-            await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
-            
-            console.log(`✅ MultiBuzz validé - Gagnant: ${winner.player.username} (+2 pts)`);
+            console.log(`✅ MultiBuzz validé - Gagnant: ${winner.player.username} (+2 pts) - Tout le monde démuté`);
             return;
         }
 
@@ -110,17 +126,34 @@ module.exports = {
             
             await interaction.reply({ embeds: [embed] });
             
-            // Réinitialiser et renvoyer le bouton BUZZ
+            // Démuter tout le monde pour discuter
+            const voiceChannel = interaction.guild.channels.cache.get(buzzState.voiceChannelId);
+            if (voiceChannel) {
+                const members = voiceChannel.members.filter(m => !m.user.bot);
+                let unmutedCount = 0;
+                for (const [, m] of members) {
+                    try {
+                        if (m.voice.serverMute) {
+                            await m.voice.setMute(false, 'Bonne réponse - discussion libre');
+                            unmutedCount++;
+                        }
+                    } catch (err) {
+                        console.error(`Erreur lors du démute de ${m.user.tag}:`, err.message);
+                    }
+                }
+                console.log(`🔓 ${unmutedCount} personne(s) démutée(s) pour discussion`);
+            }
+            
+            // Réinitialiser (VERROUILLÉ - en attente de /rebuzz)
             buzzState.currentSpeaker = null;
-            buzzState.canBuzz = true;
+            buzzState.canBuzz = false; // VERROUILLÉ
+            buzzState.attackData = null;
             
             // Sauvegarder les modifications
             interaction.client.buzzState.set(interaction.guildId, buzzState);
             syncBuzzState(interaction.client, interaction.guildId);
             
-            await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
-            
-            console.log(`✅ ${member.user.tag} a reçu 1 point (Total: ${totalWins})`);
+            console.log(`✅ ${member.user.tag} a reçu 1 point (Total: ${totalWins}) - Tout le monde démuté`);
             
         } catch (error) {
             console.error('❌ Erreur lors de la validation:', error);

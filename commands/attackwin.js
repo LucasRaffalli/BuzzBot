@@ -72,22 +72,34 @@ module.exports = {
 
             await interaction.reply({ embeds: [embed] });
 
-            // Remute l'attaquant
-            await attackerMember.voice.setMute(true, 'Attaque terminée');
+            // Démuter tout le monde pour discuter
+            const voiceChannel = interaction.guild.channels.cache.get(buzzState.voiceChannelId);
+            if (voiceChannel) {
+                const members = voiceChannel.members.filter(m => !m.user.bot);
+                let unmutedCount = 0;
+                for (const [, m] of members) {
+                    try {
+                        if (m.voice.serverMute) {
+                            await m.voice.setMute(false, 'Attaque réussie - discussion libre');
+                            unmutedCount++;
+                        }
+                    } catch (err) {
+                        console.error(`Erreur lors du démute de ${m.user.tag}:`, err.message);
+                    }
+                }
+                console.log(`🔓 ${unmutedCount} personne(s) démutée(s) pour discussion`);
+            }
 
-            // Réinitialiser l'état d'attaque
+            // Réinitialiser l'état d'attaque (VERROUILLÉ - en attente de /rebuzz)
             buzzState.attackData = null;
             buzzState.currentSpeaker = null;
-            buzzState.canBuzz = true;
+            buzzState.canBuzz = false; // VERROUILLÉ
 
             // Sauvegarder les modifications
             interaction.client.buzzState.set(interaction.guildId, buzzState);
             syncBuzzState(interaction.client, interaction.guildId);
 
-            // Renvoyer le bouton BUZZ
-            await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
-
-            console.log(`⚔️ Attaque réussie: ${attacker.username} (+1) vs ${target.username} (-1)`);
+            console.log(`⚔️ Attaque réussie: ${attacker.username} (+1) vs ${target.username} (-1) - Tout le monde démuté`);
 
         } catch (error) {
             console.error('❌ Erreur lors de la validation de l\'attaque:', error);

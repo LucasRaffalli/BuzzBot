@@ -11,7 +11,8 @@ BuzzBot est un bot Discord conçu pour animer des sessions de quiz interactives.
 ### Système de BUZZ
 - Le bot rejoint un canal vocal et mute tous les participants
 - Un bouton BUZZ apparaît dans le chat
-- Le premier à cliquer est démuté et peut répondre
+- **Par défaut, le BUZZ est VERROUILLÉ (🔴 rouge)** - l'admin doit le déverrouiller avec `/unlockbuzz`
+- Une fois déverrouillé (🟢 vert), le premier à cliquer est démuté et peut répondre
 - Validation par l'administrateur (bonne/mauvaise réponse)
 
 ### Modes de jeu
@@ -88,6 +89,8 @@ Si la persistance échoue, le bot continuera de fonctionner mais les données se
 - `/startevent` - Démarrer un événement (SimpleBuzz ou MultiBuzz)
 - `/stopevent` - Arrêter l'événement en cours
 - `/rebuzz` - Remuter tout le monde et réactiver le BUZZ
+- `/lockbuzz` - Verrouiller le BUZZ (personne ne peut buzzer)
+- `/unlockbuzz` - Déverrouiller le BUZZ (réactiver les buzzs)
 - `/changemode` - Changer de mode en cours d'événement
 - `/eventinfo` - Voir les détails de l'événement en cours
 

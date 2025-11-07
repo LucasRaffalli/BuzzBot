@@ -72,22 +72,19 @@ module.exports = {
 
             await interaction.reply({ embeds: [embed] });
 
-            // Remute l'attaquant
+            // Remuter l'attaquant (s'assurer qu'il est bien muté)
             await attackerMember.voice.setMute(true, 'Attaque échouée');
 
-            // Réinitialiser l'état d'attaque
+            // Réinitialiser l'état d'attaque (VERROUILLÉ - en attente de /unlockbuzz)
             buzzState.attackData = null;
             buzzState.currentSpeaker = null;
-            buzzState.canBuzz = true;
+            buzzState.canBuzz = false; // VERROUILLÉ
 
             // Sauvegarder les modifications
             interaction.client.buzzState.set(interaction.guildId, buzzState);
             syncBuzzState(interaction.client, interaction.guildId);
 
-            // Renvoyer le bouton BUZZ
-            await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
-
-            console.log(`⚔️ Attaque échouée: ${attacker.username} (-1) vs ${target.username} (+1)`);
+            console.log(`⚔️ Attaque échouée: ${attacker.username} (-1) vs ${target.username} (+1) - Tout le monde reste muté`);
 
         } catch (error) {
             console.error('❌ Erreur lors de la validation de l\'attaque:', error);

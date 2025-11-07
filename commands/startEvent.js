@@ -79,7 +79,7 @@ module.exports = {
             // Initialiser l'état du BUZZ pour ce serveur
             const eventData = {
                 eventId: eventId,
-                canBuzz: true,
+                canBuzz: false, // VERROUILLÉ par défaut
                 currentSpeaker: null,
                 voiceChannelId: voiceChannel.id,
                 channelId: interaction.channelId, // Canal où l'événement a été démarré
@@ -116,20 +116,22 @@ module.exports = {
                 : '🎯 **Mode SimpleBuzz** - Le premier à buzzer parle';
             
             const embed = new EmbedBuilder()
-                .setColor('#00FF00')
+                .setColor('#FF0000') // Rouge car verrouillé par défaut
                 .setTitle('🎉 Événement démarré!')
                 .setDescription(
                     `**Canal vocal:** ${voiceChannel.name}\n` +
                     `${modeText}\n\n` +
-                    `🔇 Tout le monde est muté!\n\n` +
+                    `🔇 Tout le monde est muté!\n` +
+                    `🔒 Le BUZZ est **VERROUILLÉ** par défaut!\n\n` +
                     `Pour parler, vous devez:\n` +
                     `✅ Être dans le canal vocal\n` +
                     `✅ Avoir le rôle ${role ? role : '**buzzEvent**'}\n` +
+                    `✅ Attendre que l'admin déverrouille avec \`/unlockbuzz\`\n` +
                     `✅ Cliquer sur le bouton **BUZZ**\n\n` +
                     (mode === 'multi' 
                         ? `🎪 Les 3 premiers buzzent → Ils parlent → Vote → L'admin valide avec \`/goodbuzz\`\n\n`
                         : `🎯 Le premier buzze → Il parle → L'admin valide avec \`/goodbuzz\` ou \`/badbuzz\`\n\n`) +
-                    `L'admin peut utiliser \`/rebuzz\` pour remuter tout le monde.`
+                    `**Commandes admin:** \`/unlockbuzz\` \`/lockbuzz\` \`/rebuzz\``
                 )
                 .addFields(
                     { name: '🎮 Mode', value: mode === 'multi' ? 'MultiBuzz (3 joueurs)' : 'SimpleBuzz (1 joueur)', inline: true },

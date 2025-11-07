@@ -42,29 +42,27 @@ module.exports = {
                     .setColor('#FF0000')
                     .setTitle('❌ MultiBuzz - Réponse incorrecte')
                     .setDescription(
-                        `**Les 3 participants ont été remutés:**\n\n` +
+                        `**Les 3 participants restent mutés:**\n\n` +
                         buzzState.multiBuzzers.map((b, i) => `${i + 1}. <@${b.userId}>`).join('\n') +
                         `\n\n🔴 **Aucun point n'a été perdu**\n` +
-                        `Cliquez sur 🔔 **BUZZ** pour une nouvelle tentative!`
+                        `🔇 **Tout le monde reste muté**\n\n` +
+                        `Utilisez \`/unlockbuzz\` pour une nouvelle question!`
                     )
                     .setTimestamp()
                     .setFooter({ text: `Refusé par ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
                 
                 await interaction.reply({ embeds: [embed] });
                 
-                // Réinitialiser le MultiBuzz
+                // Réinitialiser le MultiBuzz (VERROUILLÉ)
                 buzzState.multiBuzzers = [];
                 buzzState.voteData = null;
-                buzzState.canBuzz = true;
+                buzzState.canBuzz = false; // VERROUILLÉ
                 
                 // Sauvegarder les modifications
                 interaction.client.buzzState.set(interaction.guildId, buzzState);
                 syncBuzzState(interaction.client, interaction.guildId);
                 
-                // Renvoyer le bouton BUZZ
-                await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
-                
-                console.log(`❌ MultiBuzz refusé - Les 3 participants remutés, aucun point perdu`);
+                console.log(`❌ MultiBuzz refusé - Tout le monde reste muté`);
                 return;
                 
             } catch (error) {
@@ -93,9 +91,10 @@ module.exports = {
                 await member.voice.setMute(true, 'Mauvaise réponse - BADBUZZ');
             }
             
-            // Réinitialiser le BUZZ pour permettre à quelqu'un d'autre de buzzer
-            buzzState.canBuzz = true;
+            // Réinitialiser le BUZZ (VERROUILLÉ par défaut)
+            buzzState.canBuzz = false; // VERROUILLÉ par défaut
             buzzState.currentSpeaker = null;
+            buzzState.attackData = null;
             
             // Sauvegarder les modifications
             interaction.client.buzzState.set(interaction.guildId, buzzState);
@@ -108,17 +107,15 @@ module.exports = {
                 .setDescription(
                     `**${member.user}** n'a pas donné la bonne réponse.\n\n` +
                     `❌ **Aucun point attribué**\n` +
-                    `🔄 Le BUZZ est réactivé - Quelqu'un d'autre peut essayer!`
+                    `🔇 **Tout le monde reste muté**\n\n` +
+                    `Utilisez \`/unlockbuzz\` pour lancer une nouvelle question!`
                 )
                 .setTimestamp()
                 .setFooter({ text: `Refusé par ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
             
             await interaction.reply({ embeds: [embed] });
             
-            // Renvoyer le bouton BUZZ
-            await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
-            
-            console.log(`❌ ${member.user.tag} a donné une mauvaise réponse - BUZZ réactivé`);
+            console.log(`❌ ${member.user.tag} a donné une mauvaise réponse - Tout le monde reste muté`);
             
         } catch (error) {
             console.error('❌ Erreur lors du refus:', error);

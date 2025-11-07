@@ -23,11 +23,18 @@ async function sendBuzzButton(client, guildId, buzzState) {
         }
 
         // Inclure l'eventId dans le customId du bouton
+        // Couleur et état selon canBuzz
+        const isLocked = !buzzState.canBuzz && !buzzState.currentSpeaker;
+        const buttonStyle = isLocked ? ButtonStyle.Danger : ButtonStyle.Success;
+        const buttonLabel = isLocked ? 'BUZZ 🔒' : 'BUZZ';
+        const embedColor = isLocked ? '#FF0000' : '#00FF00';
+        const statusText = isLocked ? '🔒 **VERROUILLÉ** - Attendez le déverrouillage' : '✅ **DÉVERROUILLÉ** - Vous pouvez buzzer!';
+        
         const button = new ButtonBuilder()
             .setCustomId(`buzz_${buzzState.eventId}`)
-            .setLabel('BUZZ')
+            .setLabel(buttonLabel)
             .setEmoji('🔔')
-            .setStyle(ButtonStyle.Success);
+            .setStyle(buttonStyle);
 
         const row = new ActionRowBuilder()
             .addComponents(button);
@@ -37,11 +44,11 @@ async function sendBuzzButton(client, guildId, buzzState) {
             : '🎯 **SimpleBuzz** - 1 joueur';
 
         const embed = new EmbedBuilder()
-            .setColor('#00FF00')
+            .setColor(embedColor)
             .setTitle('🔔 Cliquez pour BUZZ!')
             .setDescription(
                 `${modeText}\n\n` +
-                `Cliquez sur le bouton pour participer!\n` +
+                `${statusText}\n\n` +
                 `_Event ID: \`${buzzState.eventId}\`_`
             )
             .setTimestamp();
