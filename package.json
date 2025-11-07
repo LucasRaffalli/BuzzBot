@@ -1,0 +1,29 @@
+{
+  "name": "buzzbot",
+  "version": "1.0.0",
+  "description": "Un bot Discord avec une architecture solide et modulaire",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "discord.js"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/voice": "^0.16.1",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "libsodium-wrappers": "^0.7.13"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=16.9.0"
+  }
+}
