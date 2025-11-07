@@ -46,6 +46,9 @@ module.exports = {
             interaction.client.buzzState.set(interaction.guildId, buzzState);
             syncBuzzState(interaction.client, interaction.guildId);
 
+            // Mettre à jour le bouton BUZZ (vert)
+            await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
+
             const embed = new EmbedBuilder()
                 .setColor('#00FF00')
                 .setTitle('🔓 BUZZ Déverrouillé!')
@@ -57,9 +60,6 @@ module.exports = {
                 .setFooter({ text: `Déverrouillé par ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
 
             await interaction.reply({ embeds: [embed] });
-
-            // Renvoyer le bouton BUZZ
-            await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
 
             console.log(`🔓 [Event ${buzzState.eventId}] BUZZ déverrouillé par ${interaction.user.tag}`);
 

@@ -1,13 +1,15 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { syncBuzzState } = require('./eventStorage');
 
 /**
- * Envoie le bouton BUZZ en bas du canal
+ * Envoie ou met à jour le bouton BUZZ
  * @param {Client} client - Le client Discord
  * @param {string} guildId - L'ID du serveur
  * @param {Object} buzzState - L'état actuel du BUZZ
- * @returns {Promise<Message>} - Le message envoyé
+ * @param {boolean} forceNew - Force la création d'un nouveau message
+ * @returns {Promise<Message>} - Le message envoyé ou édité
  */
-async function sendBuzzButton(client, guildId, buzzState) {
+async function sendBuzzButton(client, guildId, buzzState, forceNew = false) {
     if (!buzzState || !buzzState.channelId) {
         console.error('❌ Impossible d\'envoyer le bouton BUZZ: channelId manquant');
         return;
@@ -53,10 +55,35 @@ async function sendBuzzButton(client, guildId, buzzState) {
             )
             .setTimestamp();
 
-        return await channel.send({
+        // Essayer d'éditer le message existant
+        if (buzzState.buzzMessageId && !forceNew) {
+            try {
+                const existingMessage = await channel.messages.fetch(buzzState.buzzMessageId);
+                await existingMessage.edit({
+                    embeds: [embed],
+                    components: [row]
+                });
+                console.log(`🔄 Bouton BUZZ mis à jour (${isLocked ? '🔴 verrouillé' : '🟢 déverrouillé'})`);
+                return existingMessage;
+            } catch (error) {
+                console.log('⚠️ Message BUZZ introuvable, création d\'un nouveau...');
+            }
+        }
+
+        // Créer un nouveau message
+        const newMessage = await channel.send({
             embeds: [embed],
             components: [row]
         });
+        
+        // Sauvegarder l'ID du message
+        buzzState.buzzMessageId = newMessage.id;
+        client.buzzState.set(guildId, buzzState);
+        syncBuzzState(client, guildId);
+        
+        console.log(`📤 Nouveau bouton BUZZ envoyé (${isLocked ? '🔴 verrouillé' : '🟢 déverrouillé'})`);
+        return newMessage;
+        
     } catch (error) {
         console.error('❌ Erreur lors de l\'envoi du bouton BUZZ:', error);
     }

@@ -87,6 +87,7 @@ module.exports = {
                 multiBuzzers: [], // Pour le mode multi (max 3)
                 voteData: null, // Pour stocker les données de vote
                 attackData: null, // Pour stocker les données d'attaque
+                buzzMessageId: null, // ID du message BUZZ pour l'éditer
                 createdAt: Date.now(),
                 createdBy: interaction.user.id
             };
@@ -99,18 +100,8 @@ module.exports = {
 
             // Chercher le rôle buzzEvent
             const role = interaction.guild.roles.cache.find(r => r.name === 'buzzEvent');
-            
-            // Créer le bouton BUZZ avec l'eventId
-            const button = new ButtonBuilder()
-                .setCustomId(`buzz_${eventId}`)
-                .setLabel('BUZZ')
-                .setEmoji('🔔')
-                .setStyle(ButtonStyle.Success);
 
-            const row = new ActionRowBuilder()
-                .addComponents(button);
-
-            // Créer l'embed
+            // Créer l'embed d'information
             const modeText = mode === 'multi' 
                 ? '🎪 **Mode MultiBuzz** - Les 3 premiers à buzzer parlent, puis vote!'
                 : '🎯 **Mode SimpleBuzz** - Le premier à buzzer parle';
@@ -141,7 +132,7 @@ module.exports = {
                 .setFooter({ text: `Event ID: ${eventId}` })
                 .setTimestamp();
 
-            // Envoyer avec notification si le rôle existe
+            // Envoyer le message d'information
             let notificationText = '';
             if (role) {
                 notificationText = `${role} Un événement vient de commencer!`;
@@ -149,9 +140,13 @@ module.exports = {
 
             await interaction.reply({
                 content: notificationText || undefined,
-                embeds: [embed],
-                components: [row]
+                embeds: [embed]
             });
+            
+            // Envoyer le bouton BUZZ dans un message séparé et sauvegarder son ID
+            const { sendBuzzButton } = require('../utils/buzzButton');
+            await sendBuzzButton(interaction.client, interaction.guildId, eventData);
+            // Le buzzMessageId est automatiquement sauvegardé dans sendBuzzButton
 
         } catch (error) {
             console.error('❌ Erreur lors du démarrage de l\'événement:', error);

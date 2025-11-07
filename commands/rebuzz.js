@@ -101,7 +101,7 @@ module.exports = {
                 embeds: [embed]
             });
 
-            // Renvoyer le bouton BUZZ en bas
+            // Mettre à jour le bouton BUZZ (vert déverrouillé)
             await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
 
         } catch (error) {

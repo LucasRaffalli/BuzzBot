@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { sendBuzzButton } = require('../utils/buzzButton');
 const { syncBuzzState } = require('../utils/eventStorage');
 
 module.exports = {
@@ -41,6 +42,9 @@ module.exports = {
             // Sauvegarder
             interaction.client.buzzState.set(interaction.guildId, buzzState);
             syncBuzzState(interaction.client, interaction.guildId);
+
+            // Mettre à jour le bouton BUZZ (rouge)
+            await sendBuzzButton(interaction.client, interaction.guildId, buzzState);
 
             const embed = new EmbedBuilder()
                 .setColor('#FF0000')
